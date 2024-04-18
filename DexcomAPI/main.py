@@ -4,6 +4,15 @@ import matplotlib.pyplot as plt
 from pydexcom import Dexcom
 from asciichartpy import plot
 from typing import List
+from twilio.rest import Client
+
+# Get the username and password from environment variables
+dexcom_username = os.getenv("DEXCOM_USERNAME")
+dexcom_password = os.getenv("DEXCOM_PASSWORD")
+twilio_account = os.getenv("account_sid")
+twilio_token = os.getenv("auth_token")
+twilio_phone_from = os.getenv("TWILIO_FROM")
+twilio_phone_to = os.getenv("TWILIO_TO")
 
 # Categorize glucose levels based on criteria
 def categorize_glucose(glucose_value, trend_arrow):
@@ -33,16 +42,16 @@ def categorize_glucose(glucose_value, trend_arrow):
     else:
         return "Unknown"
 
-# Get the username and password from environment variables
-username = os.getenv("DEXCOM_USERNAME")
-password = os.getenv("DEXCOM_PASSWORD")
-
 # Check
-if not username or not password:
+if not dexcom_username or not dexcom_password:
     print("Error: DEXCOM_USERNAME or DEXCOM_PASSWORD environment variables are not set.")
     exit(1)
+if not twilio_account or not twilio_token:
+    print("Error: twilio_account or twilio_token environment variables are not set.")
+    exit(1)
 
-dexcom = Dexcom(username, password)   
+client = Client(twilio_account, twilio_token)
+dexcom = Dexcom(dexcom_username, dexcom_password)   
 
 # Get current glucose reading
 glucose_reading = dexcom.get_current_glucose_reading()
@@ -66,9 +75,6 @@ plt.ylabel('Glucose Level (mg/dL)')
 plt.xticks(rotation=45)
 plt.grid(True)
 plt.tight_layout()
-
-# Create the ascii chart
-height = 180
 
 # Calculate the average, mean, median, etc glucose value
 total_glucose_mgdl = sum(glucose_values)
@@ -99,15 +105,26 @@ time_in_range_percentage = round((time_in_range / total_time) * 100, 4)
 average_glucose_mmol = round(average_glucose_mgdl / 18.01559, 4)
 estimated_a1c = round((28.7 * average_glucose_mmol + 46.7) / 28.7, 4)
 
-# Print the data
+# Create message
+message_body = f"Your current glucose level is {glucose_value} mg/dL ({glucose_reading.trend_description} {trend_arrow})\n" \
+               f"Time of reading: {glucose_reading.datetime}\n" \
+               f"Glucose state: {glucose_state}\n" \
+               f"Average glucose level: {average_glucose_mgdl} mg/dL\n" \
+               f"Estimated A1C: {estimated_a1c}\n" \
+               f"Time in Range (70-150 mg/dL): {time_in_range_percentage:.2f}%"
 
-print(f"Your current glucose level is {glucose_value} mg/dL ({glucose_reading.trend_description} {trend_arrow})")
-print(f"Time of reading: {glucose_reading.datetime}")
-print(f"Glucose state: {glucose_state}")
-print(f"Average glucose level: {average_glucose_mgdl} mg/dL")
-print(f"Estimated A1C: {estimated_a1c}")
-print(f"Time in Range (70-150 mg/dL): {time_in_range_percentage:.2f}%")
+# Print the data and send the message
+print(message_body)
+
+# Send message to phone number
+message = client.messages.create(
+  from_=twilio_phone_from,
+  body=message_body,
+  to=twilio_phone_to
+)
+print(message.sid)
 
 
 # Display MatLab graph
 plt.show()
+
