@@ -68,7 +68,7 @@ timestamps = [reading.datetime for reading in glucose_graph]
 
 # Create the graph plt
 plt.figure(figsize=(10, 5))
-plt.plot(timestamps, glucose_values, marker='o', linestyle='-')
+plt.plot(timestamps, glucose_values, marker='o')
 plt.title('Glucose Readings Over the Past Day')
 plt.xlabel('Time')
 plt.ylabel('Glucose Level (mg/dL)')
