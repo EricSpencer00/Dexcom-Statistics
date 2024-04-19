@@ -23,6 +23,14 @@ You will need to install pydexcom and twilio for all features to work.
 
 After Pydexcom is installed you will need to allow your Dexcom's data
 to be accessed by Pydexcom's API system.
+Pydexcom only works using the Dexcom Share feature.
+
+To do this:
+- Make sure you have at least one follower on Dexcom Share, this can be yourself on a different account
+- If your account is newer, you may use an email in place of a username, make sure you know which type you account is
+- Then, make sure you are sharing the credentials for your Dexcom account, not the follower's account
+- You will need to make sure your password is not only numbers, as this will cause Pydexcom to not recognize your password
+- 
 
 If you do not have Twilio, you can delete all relational code for sole Terminal support
 ```
