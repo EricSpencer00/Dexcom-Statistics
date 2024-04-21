@@ -1,10 +1,10 @@
-# DexcomNumberViewer
+# Dexcom Statistics Viewer
 
 Display your CGM data to your terminal using Python + Pydexcom!
 Optionally, Enter a Twilio API Key to send a message to your phone number.
 
 A Dexcom account with a physical CGM and data is required for the program to work.
-A Twilio account with working key and messaging number is required for texting support.
+A Twilio account with working key and messaging number is required for text alert support.
 
 ## Instructions
 Create an .env file with your Dexcom and Twilio credentials like so:
@@ -13,12 +13,14 @@ DEXCOM_USERNAME=username
 DEXCOM_PASSWORD=password
 ```
 ```
-TWILIO_FROM=+1[Twilio phone number here]
-TWILIO_TO=+1[Your phone number here]
+TWILIO_FROM=+[Twilio phone number here]
+TWILIO_TO=+[Your phone number here]
 
 account_sid=[Your Twilio account number here]
 auth_token=[Your API Key here]
 ```
+Note the '+' before the area code to the right of your number.
+
 After you have made your .env file, place it in the same working directory as the Python file.
 
 You will need to allow your Dexcom's data
