@@ -1,5 +1,3 @@
-# Dexcom Statistics Viewer
-
 ## main.py:
 
 Display your CGM data to your terminal using Python + Pydexcom!
