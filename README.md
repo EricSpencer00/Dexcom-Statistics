@@ -1,5 +1,7 @@
 # Dexcom Statistics Viewer
 
+## main.py:
+
 Display your CGM data to your terminal using Python + Pydexcom!
 Optionally, Enter a Twilio API Key to send a message to your phone number.
 
@@ -52,6 +54,34 @@ Average glucose level: 141.5451 mg/dL
 Estimated A1C: 9.484
 Time in Range (70-150 mg/dL): 58.33%
 ```
+
+## arima.py
+
+Predict the next values of your Dexcom graph!
+
+Make sure your Dexcom credentials are in an .env file like before.
+
+Install pydexcom, pandas, numpy, and skikit-learn for this script to work
+
+```
+pip3 install pydexcom scikit-learn pandas numpy
+```
+
+Example Output:
+```
+Current time: 11:37PM (CDT) - Trend: falling: 124.30
+
+Predicting future glucose levels...
+11:42PM (CDT) - Trend: falling: 120.93
+11:47PM (CDT) - Trend: falling: 117.55
+11:52PM (CDT) - Trend: falling: 114.18
+11:57PM (CDT) - Trend: falling: 110.81
+12:02AM (CDT) - Trend: falling: 107.43
+12:07AM (CDT) - Trend: falling: 104.06
+12:12AM (CDT) - Trend: falling: 100.69
+12:17AM (CDT) - Trend: falling: 97.31
+```
+This information is based solely on data, and does not incorporate factors like insulin/carb correction. It's a good predictor of what would happen to you if you didn't do anything based on your current trends. The program takes the 20 previous points and predicts what the next numbers are using linear regression.
 
 ## Background information
 
