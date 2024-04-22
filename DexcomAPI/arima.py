@@ -27,7 +27,7 @@ current_time = datetime.datetime.now().strftime("%I:%M%p")
 current_glucose = glucose_data.iloc[0]["glucose_values"]
 print(f"Current Glucose Value at {current_time} (CDT): {current_glucose:.2f}")
 
-# Select the 10 most recent points
+# Select the 20 most recent points
 glucose_data = glucose_data.sort_values(by="timestamps", ascending=False).head(20)
 
 # Prepare data
