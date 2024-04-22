@@ -1,11 +1,9 @@
 import os
 import pandas as pd
 import numpy as np
-from statsmodels.tsa.arima.model import ARIMA
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
+import datetime
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import OneHotEncoder
 from pydexcom import Dexcom
 
 # Initialize Dexcom client
@@ -18,57 +16,62 @@ glucose_reading = dexcom.get_glucose_readings(minutes=1440, max_count=288)
 glucose_values = [reading.value for reading in glucose_reading]
 timestamps = [reading.datetime for reading in glucose_reading]
 trends = [reading.trend_description for reading in glucose_reading]
-trend_arrows = [reading.trend_arrow for reading in glucose_reading]
 
 glucose_data = pd.DataFrame({
     "timestamps": timestamps,
     "glucose_values": glucose_values,
-    "trends": trends,
-    "trend_arrows": trend_arrows
+    "trends": trends
 })
 
-# Split data into features (timestamps and trends) and target (glucose_values)
+current_time = datetime.datetime.now().strftime("%I:%M%p")
+current_glucose = glucose_data.iloc[0]["glucose_values"]
+print(f"Current Glucose Value at {current_time} (CDT): {current_glucose:.2f}")
+
+# Select the 10 most recent points
+glucose_data = glucose_data.sort_values(by="timestamps", ascending=False).head(20)
+
+# Prepare data
 X = glucose_data[["timestamps", "trends"]]
 y = glucose_data["glucose_values"]
 
-# Converting timestamps to seconds since epoch for better model compatibility
-X["timestamps"] = X["timestamps"].astype(int) // 10**9
-
-# Split data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+X["timestamps"] = pd.to_datetime(X["timestamps"]).astype(int) // 10**9
 
 # One-hot encode the 'trends' column
-encoder = OneHotEncoder()
-trend_encoded = encoder.fit_transform(X_train[['trends']])
-trend_encoded_test = encoder.transform(X_test[['trends']])
+encoder = OneHotEncoder(handle_unknown='ignore', categories=[['falling', 'falling slightly', 'rising', 'rising slightly', 'down', 'up']])
+trend_encoded = encoder.fit_transform(X[['trends']])
 
-# Convert the encoded array into a DataFrame
-trend_encoded_df = pd.DataFrame(trend_encoded.toarray(), columns=encoder.get_feature_names_out(['trends']))
-trend_encoded_df_test = pd.DataFrame(trend_encoded_test.toarray(), columns=encoder.get_feature_names_out(['trends']))
-
-# Drop the original 'trends' column and concatenate the encoded DataFrame
-X_train_encoded = X_train.drop(columns=['trends']).reset_index(drop=True)
-X_test_encoded = X_test.drop(columns=['trends']).reset_index(drop=True)
-
-X_train_encoded = pd.concat([X_train_encoded, trend_encoded_df], axis=1)
-X_test_encoded = pd.concat([X_test_encoded, trend_encoded_df_test], axis=1)
+# Concatenate the encoded DataFrame with the original features
+X_encoded = pd.concat([X.drop(columns=['trends']), pd.DataFrame(trend_encoded.toarray(), columns=encoder.get_feature_names_out(['trends']))], axis=1)
 
 # Train the model
 model = LinearRegression()
-model.fit(X_train_encoded, y_train)
+model.fit(X_encoded, y)
 
-# Make predictions for the next 3 timestamps
-next_timestamps = [max(timestamps) + (i + 1) * 60 for i in range(3)]  # Assuming timestamps are in seconds
-next_trends = ["up", "down", "steady"]  # Assuming trend directions
-next_timestamps_encoded = [[ts, trends == next_trends] for ts in next_timestamps]
+# Predict the next 9 values
+last_timestamp = max(timestamps) if timestamps else datetime.datetime.now()
 
-# Convert to DataFrame and one-hot encode trend column
-next_timestamps_df = pd.DataFrame(next_timestamps_encoded, columns=["timestamps", "trends"])
-next_timestamps_df["timestamps"] = next_timestamps_df["timestamps"].astype(int) // 10**9
-next_trends_encoded = encoder.transform(next_timestamps_df[['trends']])
-next_trends_encoded_df = pd.DataFrame(next_trends_encoded.toarray(), columns=encoder.get_feature_names_out(['trends']))
-next_timestamps_df_encoded = pd.concat([next_timestamps_df.drop(columns=['trends']), next_trends_encoded_df], axis=1)
+next_timestamps = [last_timestamp + datetime.timedelta(minutes=5) * (i+1) for i in range(9)]
 
-# Predict glucose values for the next 3 timestamps
-next_glucose_values = model.predict(next_timestamps_df_encoded)
-print("Predicted Glucose Values for the Next 3 Timestamps:", next_glucose_values)
+next_predictions = pd.DataFrame({
+    "timestamps": next_timestamps * len(encoder.categories_[0]),  # Repeat each timestamp for each trend
+    "trends": np.repeat(encoder.categories_[0], 9)  # Repeat each trend for each timestamp
+})
+
+next_predictions["timestamps"] = pd.to_datetime(next_predictions["timestamps"]).astype(int) // 10**9
+
+# One-hot encode the trends in the prediction DataFrame
+next_trend_encoded = encoder.transform(next_predictions[['trends']])
+next_trend_encoded_df = pd.DataFrame(next_trend_encoded.toarray(), columns=encoder.get_feature_names_out(['trends']))
+
+# Concatenate the encoded DataFrame with the original features
+next_timestamps_encoded = pd.concat([next_predictions.drop(columns=['trends']), next_trend_encoded_df], axis=1)
+
+# Predict the glucose values for the next timestamps
+next_glucose_values = model.predict(next_timestamps_encoded)
+next_glucose_values = np.maximum(next_glucose_values, 0)
+
+print(f"Current time: {datetime.datetime.now().strftime('%I:%M%p')} (CDT) - Trend: {next_predictions['trends'][0]}: {next_glucose_values[0]:.2f}\n")
+print("Predicting future glucose levels...")
+for i in range(1, len(next_timestamps)):
+    time_string = (datetime.datetime.now() + datetime.timedelta(minutes=5*i)).strftime('%I:%M%p')
+    print(f"{time_string} (CDT) - Trend: {next_predictions['trends'][i]}: {next_glucose_values[i]:.2f}")
