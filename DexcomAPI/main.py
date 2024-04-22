@@ -2,7 +2,6 @@ import os
 import statistics
 import matplotlib.pyplot as plt
 from pydexcom import Dexcom
-from asciichartpy import plot
 from typing import List
 from twilio.rest import Client
 
@@ -65,16 +64,45 @@ glucose_state = categorize_glucose(glucose_value, trend_arrow)
 glucose_graph: List = dexcom.get_glucose_readings(minutes=1440, max_count=288)
 glucose_values = [reading.value for reading in glucose_graph]
 timestamps = [reading.datetime for reading in glucose_graph]
+trend_arrows = [reading.trend_arrow for reading in glucose_graph]
 
 # Create the graph plt
 plt.figure(figsize=(10, 5))
-plt.plot(timestamps, glucose_values, marker='o', linestyle='-')
-plt.title('Glucose Readings Over the Past Day')
+
+# Initialize variables for storing previous timestamp and value
+prev_timestamp = timestamps[0]
+prev_value = glucose_values[0]
+
+# Plot glucose values
+plt.plot(timestamps, glucose_values, color='black', linewidth=1)
+
+# Highlight low, in-range, and high glucose levels
+for i, reading in enumerate(glucose_values):
+    if reading < 70:
+        plt.axhline(y=reading, color='red', linestyle='--', linewidth=1, alpha=0.5) # Low glucose
+    elif 70 <= reading < 150:
+        plt.axhline(y=reading, color='green', linestyle='--', linewidth=1, alpha=0.5) # In-range glucose
+    else:
+        plt.axhline(y=reading, color='orange', linestyle='--', linewidth=1, alpha=0.5) # High glucose
+
+# Plot trend arrows
+for i, arrow in enumerate(trend_arrows):
+    if arrow == "↑":
+        plt.scatter(timestamps[i], glucose_values[i], color='green', marker='^', s=50)
+    elif arrow == "↓":
+        plt.scatter(timestamps[i], glucose_values[i], color='red', marker='v', s=50)
+    else:
+        plt.scatter(timestamps[i], glucose_values[i], color='orange', marker='o', s=50)
+
+# Plot settings
+plt.title('Dexcom Glucose Readings Over the Past Day')
 plt.xlabel('Time')
 plt.ylabel('Glucose Level (mg/dL)')
 plt.xticks(rotation=45)
-plt.grid(True)
 plt.tight_layout()
+
+# Save the plot as an image
+plt.savefig('dexcom_glucose_graph.png')
 
 # Calculate the average, mean, median, etc glucose value
 total_glucose_mgdl = sum(glucose_values)
@@ -111,19 +139,28 @@ message_body = f"Your current glucose level is {glucose_value} mg/dL ({glucose_r
                f"Glucose state: {glucose_state}\n" \
                f"Average glucose level: {average_glucose_mgdl} mg/dL\n" \
                f"Estimated A1C: {estimated_a1c}\n" \
-               f"Time in Range (70-150 mg/dL): {time_in_range_percentage:.2f}%"
+               f"Time in Range (70-150 mg/dL): {time_in_range_percentage:.2f}%\n" \
+               f"Median Glucose: {median_glucose_mgdl} mg/dL\n" \
+               f"Standard Deviation: {stdev_glucose_mgdl} mg/dL\n" \
+               f"Minimum Glucose: {min_glucose_mgdl} mg/dL\n" \
+               f"Maximum Glucose: {max_glucose_mgdl} mg/dL\n" \
+               f"Glucose Range: {glucose_range_mgdl} mg/dL\n" \
+               f"IQR: {iqr} mg/dL\n" \
+               f"Coef. of Variation: {coeff_var_glucose_mgdl}%"
 
 # Print the data and send the message
 print(message_body)
 
-# Send message to phone number
-message = client.messages.create(
-  from_=twilio_phone_from,
-  body=message_body,
-  to=twilio_phone_to
-)
-print(message.sid)
+# Send message using Twilio
+try:
+    message = client.messages.create(
+        from_=twilio_phone_from,
+        body=message_body,
+        to=twilio_phone_to
+    )
+    print("SMS sent successfully!")
+except Exception as e:
+    print(f"Error occurred while sending SMS: {e}")
 
-
-# Display MatLab graph
+# Display graph
 plt.show()
