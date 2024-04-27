@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import numpy as np
 import datetime
+import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import OneHotEncoder
 from pydexcom import Dexcom
@@ -70,8 +71,8 @@ next_timestamps_encoded = pd.concat([next_predictions.drop(columns=['trends']), 
 next_glucose_values = model.predict(next_timestamps_encoded)
 next_glucose_values = np.maximum(next_glucose_values, 0)
 
-print(f"Current time: {datetime.datetime.now().strftime('%I:%M%p')} (CDT) - Trend: {next_predictions['trends'][0]}: {next_glucose_values[0]:.2f}\n")
+print(f"Current time: {datetime.datetime.now().strftime('%I:%M%p')} (CDT) - Trend: {next_glucose_values[0]:.2f}\n")
 print("Predicting future glucose levels...")
 for i in range(1, len(next_timestamps)):
     time_string = (datetime.datetime.now() + datetime.timedelta(minutes=5*i)).strftime('%I:%M%p')
-    print(f"{time_string} (CDT) - Trend: {next_predictions['trends'][i]}: {next_glucose_values[i]:.2f}")
+    print(f"{time_string} (CDT) - Trend: {next_glucose_values[i]:.2f}")
