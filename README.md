@@ -79,7 +79,7 @@ Predicting future glucose levels...
 12:12AM (CDT) - Trend: falling: 100.69
 12:17AM (CDT) - Trend: falling: 97.31
 ```
-This information is based solely on data, and does not incorporate factors like insulin/carb correction. It's a good predictor of what would happen to you if you didn't do anything based on your current trends. The program takes the 20 previous points and predicts what the next numbers are using linear regression.
+This information is based solely on data, and does not incorporate factors like insulin/carb correction. It's a good predictor of what would happen to you if you didn't do anything based on your current trends. The program takes the 20 previous points and predicts the next readings based on linear regression.
 
 ## Background information
 

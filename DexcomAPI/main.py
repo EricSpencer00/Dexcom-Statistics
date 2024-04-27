@@ -2,7 +2,6 @@ import os
 import statistics
 import matplotlib.pyplot as plt
 from pydexcom import Dexcom
-from asciichartpy import plot
 from typing import List
 from twilio.rest import Client
 
@@ -102,7 +101,7 @@ message_body = f"Your current glucose level is {glucose_value} mg/dL ({glucose_r
                f"Glucose state: {glucose_state}\n" \
                f"Average glucose level: {average_glucose_mgdl} mg/dL\n" \
                f"Estimated A1C: {estimated_a1c}\n" \
-               f"Time in Range (70-150 mg/dL): {time_in_range_percentage:.2f}%\n"\
+               f"Time in Range (70-150 mg/dL): {time_in_range_percentage:.2f}%\n" \
                f"Median Glucose: {median_glucose_mgdl} mg/dL\n" \
                f"Standard Deviation: {stdev_glucose_mgdl} mg/dL\n" \
                f"Minimum Glucose: {min_glucose_mgdl} mg/dL\n" \
@@ -124,3 +123,4 @@ print(message_body)
 
 # Display graph
 plt.show()
+
