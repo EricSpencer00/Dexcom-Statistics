@@ -14,35 +14,7 @@ twilio_token = os.getenv("auth_token")
 twilio_phone_from = os.getenv("TWILIO_FROM")
 twilio_phone_to = os.getenv("TWILIO_TO")
 
-# Categorize glucose levels based on criteria
-def categorize_glucose(glucose_value, trend_arrow):
-    """
-    Categorize glucose levels based on the provided criteria.
-    
-    Args:
-        glucose_value (float): Glucose value.
-        trend_arrow (str): Trend arrow direction ("<", ">", or "-").
-    
-    Returns:
-        str: Categorized state of glucose level.
-    """
-    # Glucose level categorization based on provided criteria
-    if glucose_value < 80 and trend_arrow == "↓":
-        return "Low"
-    elif glucose_value < 70:
-        return "Low"
-    elif 80 <= glucose_value < 140 and trend_arrow != "↑":
-        return "In Range"
-    elif glucose_value < 150 and trend_arrow != "↑":
-        return "In Range"
-    elif glucose_value > 140 and trend_arrow == "↑":
-        return "High"
-    elif glucose_value > 150:
-        return "High"
-    else:
-        return "Unknown"
-
-# Check
+# Check accounts
 if not dexcom_username or not dexcom_password:
     print("Error: DEXCOM_USERNAME or DEXCOM_PASSWORD environment variables are not set.")
     exit(1)
@@ -51,15 +23,15 @@ if not twilio_account or not twilio_token:
     exit(1)
 
 client = Client(twilio_account, twilio_token)
-dexcom = Dexcom(dexcom_username, dexcom_password)   
+dexcom = Dexcom(dexcom_username, dexcom_password) 
 
 # Get current glucose reading
 glucose_reading = dexcom.get_current_glucose_reading()
 glucose_value = glucose_reading.value
 trend_arrow = glucose_reading.trend_arrow
 
-# Categorize the glucose level
-glucose_state = categorize_glucose(glucose_value, trend_arrow)
+# Categorize glucose levels based on criteria
+glucose_state = "Low" if glucose_value < 70 else "High" if glucose_value > 150 else "In Range"
 
 # Create the graph data from past day's data
 glucose_graph: List = dexcom.get_glucose_readings(minutes=1440, max_count=288)
@@ -69,22 +41,20 @@ trend_arrows = [reading.trend_arrow for reading in glucose_graph]
 
 # Create the graph plt
 plt.figure(figsize=(10, 5))
-
-# Initialize variables for storing previous timestamp and value
-prev_timestamp = timestamps[0]
-prev_value = glucose_values[0]
-
-# Plot glucose values
 plt.plot(timestamps, glucose_values, color='black', linewidth=1)
 
 # Highlight low, in-range, and high glucose levels
-for i, reading in enumerate(glucose_values):
-    if reading < 70:
-        plt.axhline(y=reading, color='red', linestyle='--', linewidth=1, alpha=0.5) # Low glucose
-    elif 70 <= reading < 150:
-        plt.axhline(y=reading, color='green', linestyle='--', linewidth=1, alpha=0.5) # In-range glucose
-    else:
-        plt.axhline(y=reading, color='orange', linestyle='--', linewidth=1, alpha=0.5) # High glucose
+low_glucose = [idx for idx, reading in enumerate(glucose_values) if reading < 70]
+in_range_glucose = [idx for idx, reading in enumerate(glucose_values) if 70 <= reading <= 150]
+high_glucose = [idx for idx, reading in enumerate(glucose_values) if reading > 150]
+
+if low_glucose:
+    plt.axhline(y=min(glucose_values), color='red', linestyle='--', linewidth=1, alpha=0.5, xmin=min(low_glucose)/len(glucose_values), xmax=max(low_glucose)/len(glucose_values)) # Low glucose
+if high_glucose:
+    plt.axhline(y=max(glucose_values), color='red', linestyle='--', linewidth=1, alpha=0.5, xmin=min(high_glucose)/len(glucose_values), xmax=max(high_glucose)/len(glucose_values)) # High glucose
+if in_range_glucose:
+    plt.axhline(y=70, color='green', linestyle='--', linewidth=1, alpha=0.5, xmin=min(in_range_glucose)/len(glucose_values), xmax=max(in_range_glucose)/len(glucose_values)) # In-range glucose
+    plt.axhline(y=150, color='green', linestyle='--', linewidth=1, alpha=0.5, xmin=min(in_range_glucose)/len(glucose_values), xmax=max(in_range_glucose)/len(glucose_values)) # In-range glucose
 
 # Plot trend arrows
 for i, arrow in enumerate(trend_arrows):
@@ -97,7 +67,7 @@ for i, arrow in enumerate(trend_arrows):
 
 # Plot settings
 plt.title('Dexcom Glucose Readings Over the Past Day')
-plt.xlabel('Time')
+plt.xlabel('Time (Day / Hour)')
 plt.ylabel('Glucose Level (mg/dL)')
 plt.xticks(rotation=45)
 plt.tight_layout()
@@ -105,30 +75,22 @@ plt.tight_layout()
 # Save the plot as an image
 plt.savefig('dexcom_glucose_graph.png')
 
-# Calculate the average, mean, median, etc glucose value
-total_glucose_mgdl = sum(glucose_values)
-average_glucose_mgdl = round(total_glucose_mgdl / len(glucose_values), 4)
-mean_glucose_mgdl = round(statistics.mean(glucose_values), 4)
+# Calculate glucose statistics
+average_glucose_mgdl = round(statistics.mean(glucose_values), 4)
 median_glucose_mgdl = round(statistics.median(glucose_values), 4)
 stdev_glucose_mgdl = round(statistics.stdev(glucose_values), 4)
-variance_glucose_mgdl = round(statistics.variance(glucose_values), 4)
 min_glucose_mgdl = min(glucose_values)
 max_glucose_mgdl = max(glucose_values)
 glucose_range_mgdl = max_glucose_mgdl - min_glucose_mgdl
 
-q1 = statistics.quantiles(glucose_values, n=4)[0]
-q3 = statistics.quantiles(glucose_values, n=4)[-1]
-iqr = q3 - q1
-
-coeff_var_glucose_mgdl = round((stdev_glucose_mgdl / average_glucose_mgdl) * 100, 4)
-
 # Calculate Time in Range
-time_in_range = 0
-for reading in glucose_values:
-    if 70 <= reading <= 150:
-        time_in_range += 1
-total_time = len(glucose_values)
-time_in_range_percentage = round((time_in_range / total_time) * 100, 4)
+time_in_range_percentage = round((len(in_range_glucose) / len(glucose_values)) * 100, 4)
+
+# Calculate Glycemic Variability Index
+mgdl_above_180 = sum(reading - 180 for reading in glucose_values if reading > 180)
+mgdl_below_70 = sum(70 - reading for reading in glucose_values if reading < 70)
+total_area = (max_glucose_mgdl - 180) * time_in_range_percentage / 100 + mgdl_above_180 + mgdl_below_70
+glycemic_variability_index = ((mgdl_above_180 + mgdl_below_70) / total_area) * 100
 
 # Use ADAG formula to estimate A1C
 average_glucose_mmol = round(average_glucose_mgdl / 18.01559, 4)
@@ -146,8 +108,8 @@ message_body = f"Your current glucose level is {glucose_value} mg/dL ({glucose_r
                f"Minimum Glucose: {min_glucose_mgdl} mg/dL\n" \
                f"Maximum Glucose: {max_glucose_mgdl} mg/dL\n" \
                f"Glucose Range: {glucose_range_mgdl} mg/dL\n" \
-               f"IQR: {iqr} mg/dL\n" \
-               f"Coef. of Variation: {coeff_var_glucose_mgdl}%"
+               f"Coef. of Variation: {round((stdev_glucose_mgdl / average_glucose_mgdl) * 100, 4)}%\n" \
+               f"Glycemic Variability Index: {glycemic_variability_index}%"
 
 # Print the data to console
 print(message_body)
