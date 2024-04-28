@@ -85,11 +85,16 @@ glucose_range_mgdl = max_glucose_mgdl - min_glucose_mgdl
 # Calculate Time in Range
 time_in_range_percentage = round((len(in_range_glucose) / len(glucose_values)) * 100, 4)
 
-# Calculate Glycemic Variability Index
+# Calculate Glycemic Variability Index Areas
 mgdl_above_180 = sum(reading - 180 for reading in glucose_values if reading > 180)
 mgdl_below_70 = sum(70 - reading for reading in glucose_values if reading < 70)
+
+# Handling potential division by zero
 total_area = (max_glucose_mgdl - 180) * time_in_range_percentage / 100 + mgdl_above_180 + mgdl_below_70
-glycemic_variability_index = ((mgdl_above_180 + mgdl_below_70) / total_area) * 100
+if total_area == 0:
+    glycemic_variability_index = 0  # or any other default value
+else:
+    glycemic_variability_index = ((mgdl_above_180 + mgdl_below_70) / total_area) * 100
 
 # Use ADAG formula to estimate A1C
 average_glucose_mmol = round(average_glucose_mgdl / 18.01559, 4)
