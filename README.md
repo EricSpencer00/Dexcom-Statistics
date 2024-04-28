@@ -45,19 +45,19 @@ pip3 install twilio
 
 Example Output:
 ```
-Your current glucose level is 94 mg/dL (steady →)
-Time of reading: 2024-04-27 14:42:46
+Your current glucose level is 144 mg/dL (steady →)
+Time of reading: 2024-04-28 17:17:48
 Glucose state: In Range
-Average glucose level: 154.0694 mg/dL
-Estimated A1C: 10.1792
-Time in Range (70-150 mg/dL): 51.74%
-Median Glucose: 149.0 mg/dL
-Standard Deviation: 42.4639 mg/dL
-Minimum Glucose: 90 mg/dL
-Maximum Glucose: 303 mg/dL
-Glucose Range: 213 mg/dL
-Coef. of Variation: 27.5615%
-Glycemic Variability Index: 97.187553818188%
+Average glucose level: 140.0242 mg/dL
+Estimated A1C: 9.3996
+Time in Range (70-150 mg/dL): 50.81%
+Median Glucose: 138.5 mg/dL
+Standard Deviation: 54.5062 mg/dL
+Minimum Glucose: 39 mg/dL
+Maximum Glucose: 249 mg/dL
+Glucose Range: 210 mg/dL
+Coef. of Variation: 38.9263%
+Glycemic Variability Index: 98.64072441980657%
 ```
 
 ## arima.py
