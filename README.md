@@ -59,6 +59,27 @@ Glucose Range: 213 mg/dL
 Coef. of Variation: 27.5615%
 Glycemic Variability Index: 97.187553818188%
 ```
+## slope.py
+Predict the next values of your Dexcom graph!
+
+Make sure your Dexcom credentials are in an .env file like before.
+
+Install pydexcom, pandas, numpy, and skikit-learn for this script to work
+
+```
+pip3 install pydexcom scikit-learn pandas numpy
+```
+
+Example Output:
+```
+Current Glucose Value at 03:41PM (CDT): 157.00
+Current time: 03:41PM (CDT) - Trend: 158.30
+
+Predicting future glucose levels...
+03:46PM (CDT) - Trend: 160.20
+03:51PM (CDT) - Trend: 162.10
+03:56PM (CDT) - Trend: 164.00
+```
 
 ## arima.py
 
@@ -87,6 +108,11 @@ Predicting future glucose levels...
 12:17AM (CDT) - Trend: falling: 97.31
 ```
 This information is based solely on data, and does not incorporate factors like insulin/carb correction. It's a good predictor of what would happen to you if you didn't do anything based on your current trends. The program takes the 20 previous points and predicts the next readings based on linear regression.
+
+
+## Notes
+* I'm not going to claim that lstm works, tinkering around and will delete if I cannot find solution.
+* Arima can also be a bit wonky, slope.py is your best bet for prediction.
 
 ## Background information
 
