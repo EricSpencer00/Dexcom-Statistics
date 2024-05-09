@@ -5,16 +5,16 @@ import pydexcom
 import os
 from defs import get_dexcom_connection, get_database_connection
 
-def get_latest_timestamp(cursor):
-    query = "SELECT MAX(timestamp) FROM dexcom_data"
+def get_latest_timestamp(cursor, db_name):
+    query = f"SELECT MAX(timestamp) FROM {db_name}"
     cursor.execute(query)
     result = cursor.fetchone()
     return result[0] if result[0] is not None else None
 
-def insert_glucose_readings(dexcom, db):
+def insert_glucose_readings(dexcom, db, db_name):
     cursor = db.cursor()
 
-    latest_timestamp = get_latest_timestamp(cursor)
+    latest_timestamp = get_latest_timestamp(cursor, db_name)
 
     glucose_readings = dexcom.get_glucose_readings(minutes=1440, max_count=288)
 
@@ -38,12 +38,3 @@ def insert_glucose_readings(dexcom, db):
         db.commit()
 
     cursor.close()
-
-def main():
-    dexcom = get_dexcom_connection()
-    db = get_database_connection()
-
-    try: 
-        insert_glucose_readings(dexcom, db)
-    finally:
-        db.close()
