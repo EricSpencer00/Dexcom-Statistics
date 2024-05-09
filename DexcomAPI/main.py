@@ -1,27 +1,39 @@
 import os
+import smtplib
 import statistics
 import matplotlib.pyplot as plt
 from pydexcom import Dexcom
 from typing import List
-from twilio.rest import Client
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.message import EmailMessage
+import ssl
+import smtplib
 
 # Get the username and password from environment variables
 dexcom_username = os.getenv("DEXCOM_USERNAME")
 dexcom_password = os.getenv("DEXCOM_PASSWORD")
-# twilio_account = os.getenv("account_sid")
-# twilio_token = os.getenv("auth_token")
-# twilio_phone_from = os.getenv("TWILIO_FROM")
-# twilio_phone_to = os.getenv("TWILIO_TO")
+email_username = os.getenv("email_username")
+email_password = os.getenv("email_password")
+receiver_number = os.getenv("receiver_number")
+
+smtp_server = 'smtp.gmail.com'
+smtp_port = 587
 
 # Check accounts
 if not dexcom_username or not dexcom_password:
     print("Error: DEXCOM_USERNAME or DEXCOM_PASSWORD environment variables are not set.")
     exit(1)
-# if not twilio_account or not twilio_token:
-#     print("Error: twilio_account or twilio_token environment variables are not set.")
-#     exit(1)
+if not email_username:
+    print("Error: email_username environment variable is not set.")
+    exit(1)
+if not email_password:
+    print("Error: email_password environment variable is not set.")
+    exit(1)
+if not receiver_number:
+    print("Error: receiver number environment variable is not set.")
 
-# client = Client(twilio_account, twilio_token)
+
 dexcom = Dexcom(dexcom_username, dexcom_password) 
 
 # Get current glucose reading
@@ -110,17 +122,41 @@ message_body = f"Your current glucose level is {glucose_value} mg/dL ({glucose_r
                f"Coef. of Variation: {round((stdev_glucose_mgdl / average_glucose_mgdl) * 100, 4)}%\n" \
                f"Glycemic Variability Index: {glycemic_variability_index}%"
 
+message_concise = f"You are {glucose_value} mg/dL and {glucose_reading.trend_description} {trend_arrow}\n" \
+               f"{glucose_state}"
+
 # Print the data to console
 print(message_body)
+print(message_concise)
 
-# # Send message to phone number
-# message = client.messages.create(
-#   from_=twilio_phone_from,
-#   body=message_body,
-#   to=twilio_phone_to
-# )
+# Send message to phone number
+# em = EmailMessage()
+# em["From"] = email_username
+# em["To"] = receiver_number
+# em["Subject"] = ""
+# em.set_content(message_concise)
 
+# context = ssl.create_default_context()
+
+# with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
+#     smtp.login(email_username, email_password)
+#     smtp.sendmail(email_username, receiver_number, em.as_string())
+
+message = MIMEMultipart()
+message["From"] = email_username
+message["To"] = receiver_number
+
+message.attach(MIMEText(message_concise, 'plain'))
+
+try:
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(email_username, email_password)
+        server.sendmail(email_username, receiver_number, message.as_string())
+    print("success")
+except Exception as e:
+    print(f"error: {e}")
 
 # Display graph
-plt.show()
+# plt.show()
 
