@@ -8,20 +8,20 @@ from twilio.rest import Client
 # Get the username and password from environment variables
 dexcom_username = os.getenv("DEXCOM_USERNAME")
 dexcom_password = os.getenv("DEXCOM_PASSWORD")
-twilio_account = os.getenv("account_sid")
-twilio_token = os.getenv("auth_token")
-twilio_phone_from = os.getenv("TWILIO_FROM")
-twilio_phone_to = os.getenv("TWILIO_TO")
+# twilio_account = os.getenv("account_sid")
+# twilio_token = os.getenv("auth_token")
+# twilio_phone_from = os.getenv("TWILIO_FROM")
+# twilio_phone_to = os.getenv("TWILIO_TO")
 
 # Check accounts
 if not dexcom_username or not dexcom_password:
     print("Error: DEXCOM_USERNAME or DEXCOM_PASSWORD environment variables are not set.")
     exit(1)
-if not twilio_account or not twilio_token:
-    print("Error: twilio_account or twilio_token environment variables are not set.")
-    exit(1)
+# if not twilio_account or not twilio_token:
+#     print("Error: twilio_account or twilio_token environment variables are not set.")
+#     exit(1)
 
-client = Client(twilio_account, twilio_token)
+# client = Client(twilio_account, twilio_token)
 dexcom = Dexcom(dexcom_username, dexcom_password) 
 
 # Get current glucose reading
