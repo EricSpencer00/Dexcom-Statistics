@@ -1,5 +1,3 @@
-# MGDL numbers
-
 import os
 import smtplib
 import statistics
@@ -44,12 +42,51 @@ dexcom = Dexcom(dexcom_username, dexcom_password)
 glucose_reading = dexcom.get_current_glucose_reading()
 glucose_value = glucose_reading.value
 trend_arrow = glucose_reading.trend_arrow
-glucose_graph: List = dexcom.get_glucose_readings(minutes=1440, max_count=288)
-glucose_values = [reading.value for reading in glucose_graph]
-
 
 # Categorize glucose levels based on criteria
 glucose_state = "Low" if glucose_value < 70 else "High" if glucose_value > 150 else "In Range"
+
+# Create the graph data from past day's data
+glucose_graph: List = dexcom.get_glucose_readings(minutes=1440, max_count=288)
+glucose_values = [reading.value for reading in glucose_graph]
+timestamps = [reading.datetime for reading in glucose_graph]
+trend_arrows = [reading.trend_arrow for reading in glucose_graph]
+
+# Create the graph plt
+plt.figure(figsize=(10, 5))
+plt.plot(timestamps, glucose_values, color='black', linewidth=1)
+
+# Highlight low, in-range, and high glucose levels
+low_glucose = [idx for idx, reading in enumerate(glucose_values) if reading < 70]
+in_range_glucose = [idx for idx, reading in enumerate(glucose_values) if 70 <= reading <= 150]
+high_glucose = [idx for idx, reading in enumerate(glucose_values) if reading > 150]
+
+if low_glucose:
+    plt.axhline(y=min(glucose_values), color='red', linestyle='--', linewidth=1, alpha=0.5, xmin=min(low_glucose)/len(glucose_values), xmax=max(low_glucose)/len(glucose_values)) # Low glucose
+if high_glucose:
+    plt.axhline(y=max(glucose_values), color='red', linestyle='--', linewidth=1, alpha=0.5, xmin=min(high_glucose)/len(glucose_values), xmax=max(high_glucose)/len(glucose_values)) # High glucose
+if in_range_glucose:
+    plt.axhline(y=70, color='green', linestyle='--', linewidth=1, alpha=0.5, xmin=min(in_range_glucose)/len(glucose_values), xmax=max(in_range_glucose)/len(glucose_values)) # In-range glucose
+    plt.axhline(y=150, color='green', linestyle='--', linewidth=1, alpha=0.5, xmin=min(in_range_glucose)/len(glucose_values), xmax=max(in_range_glucose)/len(glucose_values)) # In-range glucose
+
+# Plot trend arrows
+for i, arrow in enumerate(trend_arrows):
+    if arrow == "↑":
+        plt.scatter(timestamps[i], glucose_values[i], color='green', marker='^', s=50)
+    elif arrow == "↓":
+        plt.scatter(timestamps[i], glucose_values[i], color='red', marker='v', s=50)
+    else:
+        plt.scatter(timestamps[i], glucose_values[i], color='orange', marker='o', s=50)
+
+# Plot settings
+plt.title('Dexcom Glucose Readings Over the Past Day')
+plt.xlabel('Time (Day / Hour)')
+plt.ylabel('Glucose Level (mg/dL)')
+plt.xticks(rotation=45)
+plt.tight_layout()
+
+# Save the plot as an image
+plt.savefig('dexcom_glucose_graph.png')
 
 # Calculate glucose statistics
 average_glucose_mgdl = round(statistics.mean(glucose_values), 4)
@@ -60,7 +97,6 @@ max_glucose_mgdl = max(glucose_values)
 glucose_range_mgdl = max_glucose_mgdl - min_glucose_mgdl
 
 # Calculate Time in Range
-in_range_glucose = [g for g in glucose_values if 70 <= g <= 150]
 time_in_range_percentage = round((len(in_range_glucose) / len(glucose_values)) * 100, 4)
 
 # Calculate Glycemic Variability Index
@@ -97,7 +133,6 @@ print(message_concise)
 message = MIMEMultipart()
 message["From"] = email_username
 message["To"] = receiver_number
-message["Subject"] = "#"
 
 message.attach(MIMEText(message_concise, 'plain'))
 
@@ -106,6 +141,10 @@ try:
         server.starttls()
         server.login(email_username, email_password)
         server.sendmail(email_username, receiver_number, message.as_string())
-    print("Message sent successfully")
+    print("success!")
 except Exception as e:
     print(f"error: {e}")
+
+# Display graph
+# plt.show()
+
