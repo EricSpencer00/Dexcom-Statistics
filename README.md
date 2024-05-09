@@ -1,31 +1,20 @@
 ## main.py:
 
+Text your phone number your current Glucose Number!
+
 Display your CGM data to your terminal using Python + Pydexcom!
-Optionally, Enter a Twilio API Key to send a message to your phone number.
 
 A Dexcom account with a physical CGM and data is required for the program to work.
-A Twilio account with working key and messaging number is required for text alert support.
+A valid email address, and phone number with email-to-text support is required for alerts.
+A MySQL database and program usage for longer than 24 hours are required for data storage longer than 24 hours.
 
 ## Instructions
-Create an .env file with your Dexcom and Twilio credentials like so:
-```
-DEXCOM_USERNAME=username
-DEXCOM_PASSWORD=password
-```
-```
-TWILIO_FROM=+[Twilio phone number here]
-TWILIO_TO=+[Your phone number here]
-
-account_sid=[Your Twilio account number here]
-auth_token=[Your API Key here]
-```
-Note the '+' before the area code to the right of your number.
+Create an .env file with your Dexcom, Database, and Email credentials like so:
+[Sample Environment Variables](env_sample.md)
 
 After you have made your .env file, place it in the same working directory as the Python file.
 
-You will need to allow your Dexcom's data
-to be accessed by Pydexcom's API system.
-Pydexcom only works using the Dexcom Share feature.
+You will need to allow your Dexcom's data to be accessed by Pydexcom's API system. Pydexcom only works using the Dexcom Share feature.
 
 To do this:
 - Make sure you have at least one follower on Dexcom Share, this can be yourself on a different account
@@ -33,31 +22,31 @@ To do this:
 - Then, make sure you are sharing the credentials for your Dexcom account, not the follower's account
 - You will need to make sure your password is not only numbers, as this will cause Pydexcom to not recognize your password
 
-You will need to install pydexcom and twilio for all features to work.
+You will need to install pydexcom and MySQL for all features to work, I installed MySQL using Homebrew on my Mac.
 
-If you do not have a Twilio API Key, you can delete all Twilio-related code and just have Terminal support
 ```
 pip3 install pydexcom
 ```
 ```
-pip3 install twilio
+brew install mysql
+brew services start mysql
 ```
 
 Example Output:
 ```
-Your current glucose level is 94 mg/dL (steady →)
-Time of reading: 2024-04-27 14:42:46
+Your current glucose level is 149 mg/dL (steady →)
+Time of reading: 2024-05-09 16:15:06
 Glucose state: In Range
-Average glucose level: 154.0694 mg/dL
-Estimated A1C: 10.1792
-Time in Range (70-150 mg/dL): 51.74%
-Median Glucose: 149.0 mg/dL
-Standard Deviation: 42.4639 mg/dL
-Minimum Glucose: 90 mg/dL
-Maximum Glucose: 303 mg/dL
-Glucose Range: 213 mg/dL
-Coef. of Variation: 27.5615%
-Glycemic Variability Index: 97.187553818188%
+Average glucose level: 143.3056 mg/dL
+Estimated A1C: 9.5817
+Time in Range (70-150 mg/dL): 69.44%
+Median Glucose: 128.0 mg/dL
+Standard Deviation: 42.1561 mg/dL
+Minimum Glucose: 65 mg/dL
+Maximum Glucose: 240 mg/dL
+Glucose Range: 175 mg/dL
+Coef. of Variation: 29.4169%
+Glycemic Variability Index: 98.03242686015963%
 ```
 ## slope.py
 Predict the next values of your Dexcom graph!
