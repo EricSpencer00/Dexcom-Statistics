@@ -1,42 +1,17 @@
 import os
-import smtplib
 import statistics
 import matplotlib.pyplot as plt
-from pydexcom import Dexcom
 from typing import List
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.message import EmailMessage
-import smtplib
+from defs import get_dexcom_connection
 
 # Get the username and password from environment variables
-dexcom_username = os.getenv("DEXCOM_USERNAME")
-dexcom_password = os.getenv("DEXCOM_PASSWORD")
-email_username = os.getenv("email_username")
-email_password = os.getenv("email_password")
-receiver_number = os.getenv("receiver_number")
+dexcom = get_dexcom_connection()
 
-smtp_server = 'smtp.gmail.com'
-smtp_port = 587
-
-# Check accounts
-if not dexcom_username:
-    print("Error: DEXCOM_USERNAME environment variable is not set.")
-    exit(1)
-if not dexcom_password:
-    print("Error: DEXCOM_PASSWORD environment variable is not set.")
-    exit(1)
-if not email_username:
-    print("Error: email_username environment variable is not set.")
-    exit(1)
-if not email_password:
-    print("Error: email_password environment variable is not set.")
-    exit(1)
-if not receiver_number:
-    print("Error: receiver number environment variable is not set.")
-
-
-dexcom = Dexcom(dexcom_username, dexcom_password) 
+required_env_variables = ["dexcom_username", "dexcom_password"]
+for env_var in required_env_variables:
+    if not os.getenv(env_var):
+        print(f"Error: {env_var} environment variable is not set.")
+        exit(1)
 
 # Get current glucose reading
 glucose_reading = dexcom.get_current_glucose_reading()
@@ -124,27 +99,9 @@ message_body = f"Your current glucose level is {glucose_value} mg/dL ({glucose_r
                f"Coef. of Variation: {round((stdev_glucose_mgdl / average_glucose_mgdl) * 100, 4)}%\n" \
                f"Glycemic Variability Index: {glycemic_variability_index}%"
 
-message_concise = f"{glucose_value} and {glucose_reading.trend_description}"
-
 # Print the data to console
 print(message_body)
-print(message_concise)
-
-message = MIMEMultipart()
-message["From"] = email_username
-message["To"] = receiver_number
-
-message.attach(MIMEText(message_concise, 'plain'))
-
-try:
-    with smtplib.SMTP(smtp_server, smtp_port) as server:
-        server.starttls()
-        server.login(email_username, email_password)
-        server.sendmail(email_username, receiver_number, message.as_string())
-    print("success!")
-except Exception as e:
-    print(f"error: {e}")
 
 # Display graph
-# plt.show()
+plt.show()
 
