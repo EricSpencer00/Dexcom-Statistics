@@ -7,7 +7,6 @@ from typing import List
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.message import EmailMessage
-import ssl
 import smtplib
 
 # Get the username and password from environment variables
@@ -21,8 +20,11 @@ smtp_server = 'smtp.gmail.com'
 smtp_port = 587
 
 # Check accounts
-if not dexcom_username or not dexcom_password:
-    print("Error: DEXCOM_USERNAME or DEXCOM_PASSWORD environment variables are not set.")
+if not dexcom_username:
+    print("Error: DEXCOM_USERNAME environment variable is not set.")
+    exit(1)
+if not dexcom_password:
+    print("Error: DEXCOM_PASSWORD environment variable is not set.")
     exit(1)
 if not email_username:
     print("Error: email_username environment variable is not set.")
@@ -128,19 +130,6 @@ message_concise = f"You are {glucose_value} mg/dL and {glucose_reading.trend_des
 # Print the data to console
 print(message_body)
 print(message_concise)
-
-# Send message to phone number
-# em = EmailMessage()
-# em["From"] = email_username
-# em["To"] = receiver_number
-# em["Subject"] = ""
-# em.set_content(message_concise)
-
-# context = ssl.create_default_context()
-
-# with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-#     smtp.login(email_username, email_password)
-#     smtp.sendmail(email_username, receiver_number, em.as_string())
 
 message = MIMEMultipart()
 message["From"] = email_username
