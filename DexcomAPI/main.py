@@ -124,8 +124,7 @@ message_body = f"Your current glucose level is {glucose_value} mg/dL ({glucose_r
                f"Coef. of Variation: {round((stdev_glucose_mgdl / average_glucose_mgdl) * 100, 4)}%\n" \
                f"Glycemic Variability Index: {glycemic_variability_index}%"
 
-message_concise = f"You are {glucose_value} mg/dL and {glucose_reading.trend_description} {trend_arrow}\n" \
-               f"{glucose_state}"
+message_concise = f"{glucose_value} {glucose_reading.trend_description}"
 
 # Print the data to console
 print(message_body)
