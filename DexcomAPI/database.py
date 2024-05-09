@@ -1,4 +1,6 @@
 # database.py
+# make sure you are in the correct Database
+
 import datetime
 import mysql.connector
 import pydexcom
@@ -34,7 +36,7 @@ def insert_glucose_readings(dexcom, db, db_name):
             insert_data.append((timestamp, mgdl_reading))
 
     if insert_data:
-        cursor.executemany("INSERT INTO dexcom_data (timestamp, mgdl_reading) VALUES (%s, %s)", insert_data)
+        cursor.executemany(f"INSERT INTO {db_name} (timestamp, mgdl_reading) VALUES (%s, %s)", insert_data)
         db.commit()
 
     cursor.close()
