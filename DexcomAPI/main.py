@@ -1,52 +1,24 @@
 # MGDL numbers
 
-import os
 import smtplib
 import statistics
-import matplotlib.pyplot as plt
 from pydexcom import Dexcom
-from typing import List
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from email.message import EmailMessage
 import smtplib
+from defs import get_dexcom_connection, get_sender_email_credentials, get_receiver_email
 
-# Get the username and password from environment variables
-dexcom_username = os.getenv("DEXCOM_USERNAME")
-dexcom_password = os.getenv("DEXCOM_PASSWORD")
-email_username = os.getenv("email_username")
-email_password = os.getenv("email_password")
-receiver_number = os.getenv("receiver_number")
-
-smtp_server = 'smtp.gmail.com'
-smtp_port = 587
-
-# Check accounts
-if not dexcom_username:
-    print("Error: DEXCOM_USERNAME environment variable is not set.")
-    exit(1)
-if not dexcom_password:
-    print("Error: DEXCOM_PASSWORD environment variable is not set.")
-    exit(1)
-if not email_username:
-    print("Error: email_username environment variable is not set.")
-    exit(1)
-if not email_password:
-    print("Error: email_password environment variable is not set.")
-    exit(1)
-if not receiver_number:
-    print("Error: receiver number environment variable is not set.")
-
-
-dexcom = Dexcom(dexcom_username, dexcom_password) 
+# Initialize variables
+dexcom = get_dexcom_connection()
+email_username, email_password = get_sender_email_credentials()
+receiver_email = get_receiver_email()
 
 # Get current glucose reading
 glucose_reading = dexcom.get_current_glucose_reading()
 glucose_value = glucose_reading.value
 trend_arrow = glucose_reading.trend_arrow
-glucose_graph: List = dexcom.get_glucose_readings(minutes=1440, max_count=288)
+glucose_graph = dexcom.get_glucose_readings(minutes=1440, max_count=288)
 glucose_values = [reading.value for reading in glucose_graph]
-
 
 # Categorize glucose levels based on criteria
 glucose_state = "Low" if glucose_value < 70 else "High" if glucose_value > 150 else "In Range"
@@ -96,16 +68,19 @@ print(message_concise)
 
 message = MIMEMultipart()
 message["From"] = email_username
-message["To"] = receiver_number
-message["Subject"] = "#"
+message["To"] = receiver_email
+message["Subject"] = "Glucose Level Alert"
 
 message.attach(MIMEText(message_concise, 'plain'))
 
 try:
+    domain = email_username.split('@')[-1] # Support all email domains
+    smtp_server = f"smtp.{domain}"
+    smtp_port = 587
     with smtplib.SMTP(smtp_server, smtp_port) as server:
         server.starttls()
         server.login(email_username, email_password)
-        server.sendmail(email_username, receiver_number, message.as_string())
+        server.sendmail(email_username, receiver_email, message.as_string())
     print("Message sent successfully")
 except Exception as e:
     print(f"error: {e}")
