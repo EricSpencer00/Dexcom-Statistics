@@ -30,17 +30,17 @@ message["Subject"] = "Glucose Level Alert"
 # Output to phone number
 message.attach(MIMEText(concise_message_mdgl(dexcom), 'plain'))
 
-# try:
-#     domain = email_username.split('@')[-1] # Support all email domains
-#     smtp_server = f"smtp.{domain}"
-#     smtp_port = 587
-#     with smtplib.SMTP(smtp_server, smtp_port) as server:
-#         server.starttls()
-#         server.login(email_username, email_password)
-#         server.sendmail(email_username, receiver_email, message.as_string())
-#     print("Message sent successfully")
-# except Exception as e:
-#     print(f"error: {e}")
+try:
+    domain = email_username.split('@')[-1] # Support all email domains
+    smtp_server = f"smtp.{domain}"
+    smtp_port = 587
+    with smtplib.SMTP(smtp_server, smtp_port) as server:
+        server.starttls()
+        server.login(email_username, email_password)
+        server.sendmail(email_username, receiver_email, message.as_string())
+    print("Message sent successfully")
+except Exception as e:
+    print(f"error: {e}")
 
 # Insert past 24 hours into database
 db = get_database_connection()
