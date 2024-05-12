@@ -24,7 +24,7 @@ print(concise_message_mmol(dexcom))
 message = MIMEMultipart()
 message["From"] = email_username
 message["To"] = receiver_email
-message["Subject"] = "Glucose Level Alert"
+# message["Subject"] = "Glucose Level Alert"
 
 # Output to phone number
 message.attach(MIMEText(concise_message_mdgl(dexcom), 'plain'))
