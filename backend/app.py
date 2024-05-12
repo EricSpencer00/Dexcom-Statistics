@@ -15,8 +15,7 @@ def index():
 def get_number():
     dexcom = get_dexcom_connection()
     result = dexcom.get_current_glucose_reading()
-    return jsonify(result)
-
+    return result
 
 if __name__ == '__main__':
     app.run(debug = True)
