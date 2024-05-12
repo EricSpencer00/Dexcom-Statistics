@@ -2,7 +2,6 @@
 
 import os
 import smtplib
-import statistics
 from pydexcom import Dexcom
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
