@@ -1,0 +1,3 @@
+/Users/ericspencer/Dexcom-Statistics-main/DexcomAPI/auto.py
+
+/Applications/Python\ 3.11/
