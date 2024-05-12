@@ -37,7 +37,7 @@ try:
         server.starttls()
         server.login(email_username, email_password)
         server.sendmail(email_username, receiver_email, message.as_string())
-    print("Message sent successfully")
+    print(f"Message sent successfully: {message}")
 except Exception as e:
     print(f"error: {e}")
 
