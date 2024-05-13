@@ -14,7 +14,7 @@ def verbose_message_mgdl(dexcom):
     stdev_glucose_mgdl = round(statistics.stdev(glucose_values), 4)
     min_glucose_mgdl = min(glucose_values)
     max_glucose_mgdl = max(glucose_values)
-    glucose_range_mgdl = max_glucose_mgdl - min_glucose_mgdl
+    glucose_range_mgdl = int((max_glucose_mgdl - min_glucose_mgdl) * 100) / 100
 
     in_range_glucose = [g for g in glucose_values if 70 <= g <= 150]
     time_in_range_percentage = round((len(in_range_glucose) / len(glucose_values)) * 100, 4)
@@ -60,7 +60,7 @@ def verbose_message_mmol(dexcom):
     stdev_glucose_mmol = round(statistics.stdev(glucose_values_mmol), 1)
     min_glucose_mmol = min(glucose_values_mmol)
     max_glucose_mmol = max(glucose_values_mmol)
-    glucose_range_mmol = max_glucose_mmol - min_glucose_mmol
+    glucose_range_mmol = int((max_glucose_mmol - min_glucose_mmol) * 100) / 100
 
     in_range_glucose = [g for g in glucose_values_mmol if 3.9 <= g <= 8.3]
     time_in_range_percentage = round((len(in_range_glucose) / len(glucose_values_mmol)) * 100, 1)

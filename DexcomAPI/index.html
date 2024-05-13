@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glucose Level Monitor</title>
+</head>
+<body>
+    <h1>Glucose Level Monitor</h1>
+    <h2>Verbose Messages:</h2>
+    <p>Glucose level (mg/dl): {{ verbose_mgdl }}</p>
+    <p>Glucose level (mmol/L): {{ verbose_mmol }}</p>
+    <h2>Concise Messages:</h2>
+    <p>Glucose level (mg/dl): {{ concise_mdgl }}</p>
+    <p>Glucose level (mmol/L): {{ concise_mmol }}</p>
+    <form action="/send-email" method="post">
+        <button type="submit">Send Email Notification</button>
+    </form>
+</body>
+</html>

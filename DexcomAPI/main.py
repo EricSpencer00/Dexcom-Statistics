@@ -16,10 +16,15 @@ email_username, email_password = get_sender_email_credentials()
 receiver_email = get_receiver_email()
 
 # Print the data to console
+print("\n\nmg/dL data:\n")
 print(verbose_message_mgdl(dexcom))
+print("\n\nmmol/L data:\n")
 print(verbose_message_mmol(dexcom))
+print("\n\nmg/dL text message:\n")
 print(concise_message_mdgl(dexcom))
+print("\n\nmmol/L text message:\n")
 print(concise_message_mmol(dexcom))
+print("\n")
 
 message = MIMEMultipart()
 message["From"] = email_username
@@ -29,17 +34,17 @@ message["To"] = receiver_email
 # Output to phone number
 message.attach(MIMEText(concise_message_mdgl(dexcom), 'plain'))
 
-try:
-    domain = email_username.split('@')[-1] # Support all email domains
-    smtp_server = f"smtp.{domain}"
-    smtp_port = 587
-    with smtplib.SMTP(smtp_server, smtp_port) as server:
-        server.starttls()
-        server.login(email_username, email_password)
-        server.sendmail(email_username, receiver_email, message.as_string())
-    print(f"Message sent successfully: {message}")
-except Exception as e:
-    print(f"error: {e}")
+# try:
+#     domain = email_username.split('@')[-1] # Support all email domains
+#     smtp_server = f"smtp.{domain}"
+#     smtp_port = 587
+#     with smtplib.SMTP(smtp_server, smtp_port) as server:
+#         server.starttls()
+#         server.login(email_username, email_password)
+#         server.sendmail(email_username, receiver_email, message.as_string())
+#     print(f"Message sent successfully: {message}")
+# except Exception as e:
+#     print(f"error: {e}")
 
 # Insert past 24 hours into database
 db = get_database_connection()
