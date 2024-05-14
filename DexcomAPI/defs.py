@@ -10,6 +10,10 @@ def get_dexcom_connection():
     """Establish and return a connection to Dexcom using environment variables"""
     dexcom_username = os.getenv("dexcom_username")
     dexcom_password = os.getenv("dexcom_password")
+
+    if not dexcom_username or not dexcom_password:
+        raise ValueError("Dexcom username and password must be set as environment variables.")
+
     return pydexcom.Dexcom(dexcom_username, dexcom_password)
 
 def get_dexcom_connection_access():

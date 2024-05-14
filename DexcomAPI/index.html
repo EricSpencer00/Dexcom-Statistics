@@ -3,18 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Glucose Level Monitor</title>
+    <title>MGDL Numbers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+        h2 {
+            text-align: center;
+        }
+        .data {
+            margin-bottom: 20px;
+        }
+        .data p {
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Glucose Level Monitor</h1>
-    <h2>Verbose Messages:</h2>
-    <p>Glucose level (mg/dl): {{ verbose_mgdl }}</p>
-    <p>Glucose level (mmol/L): {{ verbose_mmol }}</p>
-    <h2>Concise Messages:</h2>
-    <p>Glucose level (mg/dl): {{ concise_mdgl }}</p>
-    <p>Glucose level (mmol/L): {{ concise_mmol }}</p>
-    <form action="/send-email" method="post">
-        <button type="submit">Send Email Notification</button>
-    </form>
+    <div class="container">
+        <h2>Glucose Readings</h2>
+        <div class="data">
+            <h3>mg/dL data:</h3>
+            <p>{{ mgdl_data }}</p>
+        </div>
+        <div class="data">
+            <h3>mmol/L data:</h3>
+            <p>{{ mmol_data }}</p>
+        </div>
+        <div class="data">
+            <h3>mg/dL text message:</h3>
+            <p>{{ mgdl_text }}</p>
+        </div>
+        <div class="data">
+            <h3>mmol/L text message:</h3>
+            <p>{{ mmol_text }}</p>
+        </div>
+    </div>
 </body>
 </html>
