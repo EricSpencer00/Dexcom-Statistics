@@ -11,11 +11,15 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from defs import get_dexcom_connection, get_sender_email_credentials, get_receiver_email, get_database_connection
 from stat_functions import verbose_message_mgdl, verbose_message_mmol, concise_message_mdgl, concise_message_mmol
-from database import insert_glucose_readings
+# from database import insert_glucose_readings
 
 app = Flask(__name__)
 
-dexcom = get_dexcom_connection()
+try:
+    dexcom = get_dexcom_connection()
+except ValueError as e:
+    f"Error: {e}", 500
+
 email_username, email_password = get_sender_email_credentials()
 receiver_email = get_receiver_email()
 
