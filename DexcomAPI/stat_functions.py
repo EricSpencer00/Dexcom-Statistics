@@ -1,10 +1,66 @@
 import statistics
 
-def verbose_message_mgdl(dexcom):
+current_glucose_mgdl = None
+current_glucose_mmol = None
+time_of_reading = None
+glucose_state = None
+average_glucose_mgdl = None
+average_glucose_mmol = None
+estimated_a1c = None
+time_in_range_percentage = None
+median_glucose_mgdl = None
+median_glucose_mmol = None
+stdev_glucose_mgdl = None
+stdev_glucose_mmol = None
+min_glucose_mgdl = None
+min_glucose_mmol = None
+max_glucose_mgdl = None
+max_glucose_mmol = None
+glucose_range_mgdl = None
+glucose_range_mmol = None
+coef_variation_percentage = None
+glycemic_variability_index = None
+
+def get_current_trend_arrow(dexcom):
+    glucose_reading = dexcom.get_current_glucose_reading()
+    trend_arrow = glucose_reading.trend_arrow
+    return trend_arrow
+
+def get_current_trend_description(dexcom):
+    glucose_reading = dexcom.get_current_glucose_reading()
+    trend_description = glucose_reading.trend_description
+    return trend_description
+
+def get_current_value_mdgl(dexcom):
     glucose_reading = dexcom.get_current_glucose_reading()
     glucose_value = glucose_reading.value
-    trend_arrow = glucose_reading.trend_arrow
+    return glucose_value
+
+def get_current_value_mmol(dexcom):
+    glucose_reading = dexcom.get_current_glucose_reading()
+    glucose_value = glucose_reading.mmol
+    return glucose_value
+
+def get_glucose_graph(dexcom):
     glucose_graph = dexcom.get_glucose_readings(minutes=1440, max_count=288)
+    return glucose_graph
+
+def get_glucose_values(dexcom):
+    glucose_graph = get_glucose_graph(dexcom)
+    glucose_values = [reading.value for reading in glucose_graph]
+    return glucose_values
+
+def get_glucose_state_mdgl(dexcom):
+    glucose_value = get_current_value_mdgl(dexcom)
+    glucose_state = "Low" if glucose_value < 70 else "High" if glucose_value > 150 else "In Range"
+    return glucose_state
+
+
+def verbose_message_mgdl(dexcom):
+    glucose_reading = dexcom.get_current_glucose_reading() # get_current_value_mgdl
+    glucose_value = glucose_reading.value
+    trend_arrow = glucose_reading.trend_arrow # get_current_trend
+    glucose_graph = dexcom.get_glucose_readings(minutes=1440, max_count=288) # glucose graph
     glucose_values = [reading.value for reading in glucose_graph]
 
     glucose_state = "Low" if glucose_value < 70 else "High" if glucose_value > 150 else "In Range"

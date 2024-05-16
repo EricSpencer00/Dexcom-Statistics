@@ -33,11 +33,11 @@
         <h2>Glucose Readings</h2>
         <div class="data">
             <h3>mg/dL data:</h3>
-            <p>{{ mgdl_data }}</p>
+            <p>{{ mgdl_data | safe }}</p>
         </div>
         <div class="data">
             <h3>mmol/L data:</h3>
-            <p>{{ mmol_data }}</p>
+            <p>{{ mmol_data | safe }}</p>
         </div>
         <div class="data">
             <h3>mg/dL text message:</h3>

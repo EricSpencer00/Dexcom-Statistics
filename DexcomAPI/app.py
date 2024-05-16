@@ -19,22 +19,30 @@ try:
     dexcom = get_dexcom_connection()
 except ValueError as e:
     f"Error: {e}", 500
+    dexcom = None
 
 email_username, email_password = get_sender_email_credentials()
 receiver_email = get_receiver_email()
 
 @app.route('/')
 def index():
-    verbose_mgdl = verbose_message_mgdl(dexcom)
-    verbose_mmol = verbose_message_mmol(dexcom)
-    concise_mdgl = concise_message_mdgl(dexcom)
-    concise_mmol = concise_message_mmol(dexcom)
+    if dexcom:
+        verbose_mgdl = verbose_message_mgdl(dexcom)
+        verbose_mmol = verbose_message_mmol(dexcom)
+        concise_mdgl = concise_message_mdgl(dexcom)
+        concise_mmol = concise_message_mmol(dexcom)
+    else:
+        verbose_mgdl = verbose_mmol = concise_mdgl = concise_mmol = "Error connecting to Dexcom"
 
-    return render_template('index.html', verbose_mgdl=verbose_message_mgdl, verbose_mmol=verbose_message_mmol,
-                           concise_mdgl=concise_message_mdgl, concise_mmol=concise_message_mmol)
+    return render_template('index.html', verbose_mgdl=verbose_mgdl, verbose_mmol=verbose_mmol,
+                           concise_mdgl=concise_mdgl, concise_mmol=concise_mmol)
 
 @app.route('/send-email', methods=['POST'])
 def send_email():
+
+    if not dexcom:
+        return "Error: Cannot send email without Dexcom connection"
+
     message = MIMEMultipart()
     message["From"] = email_username
     message["To"] = receiver_email
