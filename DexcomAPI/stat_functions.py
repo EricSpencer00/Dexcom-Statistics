@@ -55,15 +55,86 @@ def get_glucose_state_mdgl(dexcom):
     glucose_state = "Low" if glucose_value < 70 else "High" if glucose_value > 150 else "In Range"
     return glucose_state
 
+def get_glucose_state_mmol(dexcom):
+    glucose_value = get_current_value_mmol(dexcom)
+    glucose_state = "Low" if glucose_value < 3.9 else "High" if glucose_value > 8.3 else "In Range"
+    return glucose_state
+
+def get_average_glucose_mgdl(dexcom):
+    glucose_values = get_glucose_values(dexcom)
+    return round(statistics.mean(glucose_values), 4)
+
+def get_average_glucose_mmol(dexcom):
+    average_glucose_mgdl = get_average_glucose_mgdl(dexcom)
+    return round(average_glucose_mgdl / 18.01559, 4)
+
+def get_median_glucose_mgdl(dexcom):
+    glucose_values = get_glucose_values(dexcom)
+    return round(statistics.median(glucose_values), 4)
+
+def get_median_glucose_mmol(dexcom):
+    median_glucose_mgdl = get_median_glucose_mgdl(dexcom)
+    return round(median_glucose_mgdl / 18.01559, 4)
+
+def get_stdev_glucose_mgdl(dexcom):
+    glucose_values = get_glucose_values(dexcom)
+    return round(statistics.stdev(glucose_values), 4)
+
+def get_stdev_glucose_mmol(dexcom):
+    stdev_glucose_mgdl = get_stdev_glucose_mgdl(dexcom)
+    return round(stdev_glucose_mgdl / 18.01559, 4)
+
+def get_min_glucose_mgdl(dexcom):
+    glucose_values = get_glucose_values(dexcom)
+    return min(glucose_values)
+
+def get_min_glucose_mmol(dexcom):
+    min_glucose_mgdl = get_min_glucose_mgdl(dexcom)
+    return round(min_glucose_mgdl / 18.01559, 4)
+
+def get_max_glucose_mgdl(dexcom):
+    glucose_values = get_glucose_values(dexcom)
+    return max(glucose_values)
+
+def get_max_glucose_mmol(dexcom):
+    max_glucose_mgdl = get_max_glucose_mgdl(dexcom)
+    return round(max_glucose_mgdl / 18.01559, 4)
+
+def get_glucose_range_mgdl(dexcom):
+    min_glucose_mgdl = get_min_glucose_mgdl(dexcom)
+    max_glucose_mgdl = get_max_glucose_mgdl(dexcom)
+    return int((max_glucose_mgdl - min_glucose_mgdl) * 100) / 100
+
+def get_glucose_range_mmol(dexcom):
+    glucose_range_mgdl = get_glucose_range_mgdl(dexcom)
+    return round(glucose_range_mgdl / 18.01559, 4)
+
+def get_coef_variation_percentage(dexcom):
+    stdev_glucose_mgdl = get_stdev_glucose_mgdl(dexcom) # it does not matter if you use mmol/L or md/gL here
+    average_glucose_mgdl = get_average_glucose_mgdl(dexcom)
+    return round((stdev_glucose_mgdl / average_glucose_mgdl) * 100, 4)
+
+def get_glycemic_variability_index(dexcom):
+    glucose_values = get_glucose_values(dexcom)
+    average_glucose_mgdl = statistics.mean(glucose_values) # it does not matter if you use mmol/L or md/gL here
+    stdev_glucose_mgdl = statistics.stdev(glucose_values)
+
+    glycemic_variability_index = (stdev_glucose_mgdl / average_glucose_mgdl) * 100
+
+    return glycemic_variability_index
+
+def get_estimated_a1c(dexcom):
+    average_glucose_mmol = get_average_glucose_mmol(dexcom)
+    return round((28.7 * average_glucose_mmol + 46.7) / 28.7, 4)
 
 def verbose_message_mgdl(dexcom):
     glucose_reading = dexcom.get_current_glucose_reading() # get_current_value_mgdl
     glucose_value = glucose_reading.value
     trend_arrow = glucose_reading.trend_arrow # get_current_trend
     glucose_graph = dexcom.get_glucose_readings(minutes=1440, max_count=288) # glucose graph
-    glucose_values = [reading.value for reading in glucose_graph]
+    glucose_values = [reading.value for reading in glucose_graph] # get_glucose_values
 
-    glucose_state = "Low" if glucose_value < 70 else "High" if glucose_value > 150 else "In Range"
+    glucose_state = "Low" if glucose_value < 70 else "High" if glucose_value > 150 else "In Range" # get_glucose_state_mdgl
 
     average_glucose_mgdl = round(statistics.mean(glucose_values), 4)
     median_glucose_mgdl = round(statistics.median(glucose_values), 4)
