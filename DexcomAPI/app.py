@@ -26,11 +26,12 @@ receiver_email = get_receiver_email()
 
 @app.route('/')
 def index():
-    if dexcom:
+    if dexcom & 'oauth_token' in session:
         verbose_mgdl = verbose_message_mgdl(dexcom)
         verbose_mmol = verbose_message_mmol(dexcom)
         concise_mdgl = concise_message_mdgl(dexcom)
         concise_mmol = concise_message_mmol(dexcom)
+        return 'Logged in'
     else:
         verbose_mgdl = verbose_mmol = concise_mdgl = concise_mmol = "Error connecting to Dexcom"
 
