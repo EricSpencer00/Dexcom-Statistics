@@ -11,6 +11,10 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from main import get_dexcom_connection, get_sender_email_credentials, get_receiver_email, concise_message_mdgl
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -39,40 +43,61 @@ class CGMData(db.Model):
     display_time = db.Column(db.DateTime, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-# Create database tables
-@app.before_first_request
+# Create database tables if they don't exist
+@app.before_request
 def create_tables():
-    db.create_all()
+    if not hasattr(create_tables, 'initialized'):
+        db.create_all()
+        create_tables.initialized = True
 
 # Fetch email credentials
 email_username, email_password = get_sender_email_credentials()
 receiver_email = get_receiver_email()
 
 # OAuth2 client setup
-client_id = os.getenv('DEXCOM_CLIENT_ID')
-client_secret = os.getenv('DEXCOM_CLIENT_SECRET')
+client_id = os.getenv('client_id')
+client_secret = os.getenv('client_secret')
 authorization_base_url = 'https://api.dexcom.com/v2/oauth2/login'
 token_url = 'https://api.dexcom.com/v2/oauth2/token'
+redirect_uri = 'http://localhost:5003/callback'
 
 @app.route('/')
 def index():
     if 'oauth_token' in session:
         return redirect(url_for('dashboard'))
-    return render_template('index.html')
+    return redirect(url_for('login'))
 
 @app.route('/login')
 def login():
-    dexcom = OAuth2Session(client_id)
+    dexcom = OAuth2Session(client_id, redirect_uri=redirect_uri)
     authorization_url, state = dexcom.authorization_url(authorization_base_url)
     session['oauth_state'] = state
     return redirect(authorization_url)
 
 @app.route('/callback')
 def callback():
-    dexcom = OAuth2Session(client_id, state=session['oauth_state'])
+
+    print(f"Session state: {session.get('oauth_state')}")
+    print(f"Request state: {request.args.get('state')}")
+
+    if 'oauth_state' not in session:
+        return "Error: Missing state parameter", 400
+
+    if request.args.get('state') != session['oauth_state']:
+        return "Error: Invalid state parameter", 400
+
+    dexcom = OAuth2Session(client_id, state=session['oauth_state'], redirect_uri=redirect_uri)
     token = dexcom.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
     session['oauth_token'] = token
-    session['user_email'] = dexcom.get('https://api.dexcom.com/v2/users/self').json()['email']
+    user_info = dexcom.get('https://api.dexcom.com/v2/users/self').json()
+    session['user_email'] = user_info['email']
+
+    user = User.query.filter_by(email=session['user_email']).first()
+    if not user:
+        user = User(email=session['user_email'])
+        db.session.add(user)
+        db.session.commit()
+
     return redirect(url_for('dashboard'))
 
 @app.route('/dashboard')
@@ -82,9 +107,7 @@ def dashboard():
 
     user = User.query.filter_by(email=session['user_email']).first()
     if not user:
-        user = User(email=session['user_email'])
-        db.session.add(user)
-        db.session.commit()
+        return redirect(url_for('index'))
 
     token = session['oauth_token']
     dexcom = OAuth2Session(client_id, token=token)
@@ -92,13 +115,15 @@ def dashboard():
     data = response.json()
     
     for record in data['egvs']:
-        cgm_data = CGMData(
-            user_id=user.id,
-            glucose_value=record['value'],
-            system_time=datetime.fromisoformat(record['systemTime']),
-            display_time=datetime.fromisoformat(record['displayTime'])
-        )
-        db.session.add(cgm_data)
+        existing_record = CGMData.query.filter_by(user_id=user.id, system_time=datetime.fromisoformat(record['systemTime'])).first()
+        if not existing_record:
+            cgm_data = CGMData(
+                user_id=user.id,
+                glucose_value=record['value'],
+                system_time=datetime.fromisoformat(record['systemTime']),
+                display_time=datetime.fromisoformat(record['displayTime'])
+            )
+            db.session.add(cgm_data)
     
     db.session.commit()
     
@@ -125,7 +150,7 @@ def send_email():
     message.attach(MIMEText(concise_message_mdgl(dexcom), 'plain'))
 
     try:
-        smtp_server = 'smtp.gmail.com'  # Change this to the appropriate SMTP server if not using Gmail
+        smtp_server = 'smtp.gmail.com'
         smtp_port = 587
         with smtplib.SMTP(smtp_server, smtp_port) as server:
             server.starttls()
@@ -136,4 +161,4 @@ def send_email():
         return f"Error: {e}"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5003)
