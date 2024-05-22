@@ -69,3 +69,12 @@ def get_twilio_client():
     twilio_from = os.getenv("twilio_from")
     twilio_to = os.getenv("twilio_to")
     return Client(account_sid, auth_token, twilio_from, twilio_to)
+
+def get_sms_gateway(phone_number, carrier):
+    gateways = {
+        'AT&T': 'txt.att.net',
+        'Verizon': 'vtext.com',
+        'T-Mobile': 'tmomail.net',
+        'Sprint': 'messaging.sprintpcs.com'
+    }
+    return f"{phone_number}@{gateways[carrier]}"
