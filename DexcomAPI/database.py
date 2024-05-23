@@ -18,24 +18,36 @@ def get_latest_timestamp(cursor, db_name):
         print(f"Error: ", e)
         return None
 
-def get_latest_notifcation(cursor, db_name):
+def get_latest_notification(db, db_name):
+
+    cursor = db.cursor()
+
     try:
-        query = f"SELECT notification FROM {db_name} ORDER BY timestamp DESC LIMIT 1"
-        cursor.execute(query)
+        create_temp_table_query = f"CREATE TEMPORARY TABLE latest_timestamp_temp AS SELECT MAX(timestamp) AS latest_timestamp FROM {db_name}"
+        cursor.execute(create_temp_table_query)
+
+        notification_query = f"SELECT notification FROM {db_name} WHERE timestamp IN (SELECT latest_timestamp FROM latest_timestamp_temp)"
+        cursor.execute(notification_query)
         latest_notification = cursor.fetchone()[0]
 
-        query = f"SELECT timestamp FROM {db_name} ORDER BY timestamp DESC LIMIT 6"
-        cursor.execute(query)
+        timestamp_query = f"SELECT timestamp FROM {db_name} ORDER BY timestamp DESC LIMIT 6"
+        cursor.execute(timestamp_query)
         latest_timestamps = [row[0] for row in cursor.fetchall()]
 
         return latest_notification, latest_timestamps
     except Error as e:
         print(f"Error: ", e)
         return None, None
+    finally:
+        drop_temp_table_query = "DROP TEMPORARY TABLE IF EXISTS latest_timestamp_temp"
+        cursor.execute(drop_temp_table_query)
+
 
 def insert_glucose_readings(dexcom, db, db_name):
+    
+    cursor = db.cursor()
+    
     try:
-        cursor = db.cursor()
 
         latest_timestamp = get_latest_timestamp(cursor, db_name)
 
@@ -54,10 +66,10 @@ def insert_glucose_readings(dexcom, db, db_name):
             # Ensure timestamps will not overlap and duplicate data in table
             if latest_timestamp is None or timestamp > latest_timestamp:
                 mgdl_reading = reading.value
-                insert_data.append((timestamp, mgdl_reading))
+                insert_data.append((timestamp, mgdl_reading, 0))
 
         if insert_data:
-            cursor.executemany(f"INSERT INTO {db_name} (timestamp, mgdl_reading) VALUES (%s, %s)", insert_data)
+            cursor.executemany(f"INSERT INTO {db_name} (timestamp, mgdl_reading, notification) VALUES (%s, %s, %s)", insert_data)
             db.commit()
 
         cursor.close()
