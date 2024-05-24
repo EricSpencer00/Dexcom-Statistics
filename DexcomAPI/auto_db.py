@@ -1,10 +1,10 @@
 import os
 from pydexcom import Dexcom
 from database import insert_glucose_readings
-from defs import get_dexcom_connection, get_database_connection
+from defs import get_dexcom_env_variables, get_database_connection
 
 # Initialize variables
-dexcom = get_dexcom_connection()
+dexcom = get_dexcom_env_variables()
 
 # Insert past 24 hours into database
 db = get_database_connection()

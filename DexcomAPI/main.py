@@ -9,13 +9,13 @@ from datetime import datetime, timedelta
 from pydexcom import Dexcom
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from defs import get_dexcom_connection, get_sender_email_credentials, get_receiver_email, get_database_connection
+from defs import get_dexcom_env_variables, get_sender_email_credentials, get_receiver_email, get_database_connection
 from stat_functions import verbose_message_mgdl, verbose_message_mmol, concise_message_mdgl, concise_message_mmol
 from database import insert_glucose_readings, get_latest_notification, get_latest_timestamp
 from stat_functions import get_current_value_mdgl, get_current_value_mmol
 from collections import defaultdict
 
-dexcom = get_dexcom_connection()
+dexcom = get_dexcom_env_variables()
 email_username, email_password = get_sender_email_credentials()
 receiver_email = get_receiver_email()
 db = get_database_connection()

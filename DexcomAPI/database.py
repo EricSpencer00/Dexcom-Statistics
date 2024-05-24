@@ -6,7 +6,7 @@ import mysql.connector
 import pydexcom
 import os
 from mysql.connector import Error
-from defs import get_dexcom_connection, get_database_connection
+from defs import get_dexcom_env_variables, get_database_connection
 
 def get_latest_timestamp(cursor, db_name):
     try:

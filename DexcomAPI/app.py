@@ -10,7 +10,7 @@ import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from main import get_dexcom_connection, get_sender_email_credentials, get_receiver_email, concise_message_mdgl
+from main import get_dexcom_env_variables, get_sender_email_credentials, get_receiver_email, concise_message_mdgl
 from dotenv import load_dotenv
 
 # Load environment variables

@@ -9,7 +9,7 @@ import smtplib
 from pydexcom import Dexcom
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from defs import get_dexcom_connection, get_sender_email_credentials, get_receiver_email, get_database_connection
+from defs import get_dexcom_env_variables, get_sender_email_credentials, get_receiver_email, get_database_connection
 from stat_functions import concise_message_mdgl 
 
 def send_notification(email_username, email_password, receiver_email, body):
@@ -31,7 +31,7 @@ def send_notification(email_username, email_password, receiver_email, body):
     except Exception as e:
         print(f"error: {e}")
 
-dexcom = get_dexcom_connection()
+dexcom = get_dexcom_env_variables()
 email_username, email_password = get_sender_email_credentials()
 receiver_email = get_receiver_email()
 

@@ -2,10 +2,10 @@ import os
 import statistics
 import matplotlib.pyplot as plt
 from typing import List
-from defs import get_dexcom_connection
+from defs import get_dexcom_env_variables
 
 # Get the username and password from environment variables
-dexcom = get_dexcom_connection()
+dexcom = get_dexcom_env_variables()
 
 required_env_variables = ["dexcom_username", "dexcom_password"]
 for env_var in required_env_variables:

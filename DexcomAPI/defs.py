@@ -9,7 +9,7 @@ import requests
 
 load_dotenv()
 
-def get_dexcom_connection():
+def get_dexcom_env_variables():
     """Establish and return a connection to Dexcom using environment variables"""
     dexcom_username = os.getenv("dexcom_username")
     dexcom_password = os.getenv("dexcom_password")
@@ -20,13 +20,11 @@ def get_dexcom_connection():
     return pydexcom.Dexcom(dexcom_username, dexcom_password)
 
 def get_dexcom_connection_access():
-    """Establish and return a connection to Dexcom using AuthLib OAuth request"""
     client_id = os.getenv("client_id")
     client_secret = os.getenv("client_secret")
     access_token = get_access_token(client_id, client_secret)
-    """ Don't return pydexcom object, not required here as we make
-    call to Dexcom themselves """
     # return pydexcom.Dexcom(access_token=access_token)
+    # Replace with Dexcom Establish Connection ^^^
     return 0
 
 def get_access_token(client_id, client_secret):
@@ -43,7 +41,6 @@ def get_access_token(client_id, client_secret):
         raise Exception("Failed to obtain access token")
 
 def get_database_connection():
-    """Connect to the SQL database using environment variables and return the connection"""
     return mysql.connector.connect(
         host=os.getenv("sql_host"),
         user=os.getenv("sql_user"),
@@ -51,8 +48,10 @@ def get_database_connection():
         database=os.getenv("sql_database")
     )
 
+def get_database_name():
+    return os.getenv("sql_database")
+
 def get_sender_email_credentials():
-    """Retrieve sender's email credentials from environment variables"""
     email_username = os.getenv("email_username")
     email_password = os.getenv("email_password")
     return email_username, email_password
@@ -78,3 +77,50 @@ def get_sms_gateway(phone_number, carrier):
         'Sprint': 'messaging.sprintpcs.com'
     }
     return f"{phone_number}@{gateways[carrier]}"
+
+def get_oauth():
+    oauth = OAuth()
+    oauth.register(
+        name='google',
+        client_id=os.getenv("google_client_id"),
+        client_secret=os.getenv("google_client_secret"),
+        authorize_url='https://accounts.google.com/o/oauth2/auth',
+        authorize_params=None,
+        access_token_url='https://accounts.google.com/o/oauth2/token',
+        access_token_params=None,
+        refresh_token_url=None,
+        refresh_token_params=None,
+        scope='email',
+        redirect_uri='http://localhost:5000/oauth/google'
+    )
+    return oauth
+
+def get_oauth_token():
+    return os.getenv("oauth_token")
+
+def get_oauth_secret():
+    return os.getenv("oauth_secret")
+
+def get_oauth_provider():
+    return os.getenv("oauth_provider")
+
+def get_oauth_user():
+    return os.getenv("oauth_user")
+
+def get_oauth_user_id():
+    return os.getenv("oauth_user_id")
+
+def get_oauth_user_email():
+    return os.getenv("oauth_user_email")
+
+def get_oauth_user_name():
+    return os.getenv("oauth_user_name")
+
+def get_oauth_user_picture():
+    return os.getenv("oauth_user_picture")
+
+def get_oauth_user_locale():
+    return os.getenv("oauth_user_locale")
+
+def get_oauth_user_timezone():
+    return os.getenv("oauth_user_timezone")
