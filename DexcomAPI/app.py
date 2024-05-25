@@ -2,7 +2,7 @@
 '''
 Initialize a webapp using Flask
 '''
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, g
 from requests_oauthlib import OAuth2Session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -69,8 +69,8 @@ receiver_email = get_receiver_email()
 # OAuth2 client setup
 client_id = os.getenv('client_id')
 client_secret = os.getenv('client_secret')
-authorization_base_url = 'https://api.dexcom.com/v2/oauth2/login'
-token_url = 'https://api.dexcom.com/v2/oauth2/token'
+authorization_base_url = 'https://sandbox-api.dexcom.com/v2/oauth2/login'
+token_url = 'https://sandbox-api.dexcom.com/v2/oauth2/token'
 redirect_uri = 'http://localhost:5003/callback'
 
 @app.route('/')
@@ -171,6 +171,16 @@ def send_email():
         return redirect(url_for('index'))
     except Exception as e:
         return f"Error: {e}"
+    
+def get_db():
+    if 'db' not in g:
+        g.db = db
+    return g.db
+
+@app.teardown_appcontext
+def close_db(error):
+    if 'db' in g:
+        g.db.close()
 
 if __name__ == '__main__':
     app.run(debug=True, port=5003)
