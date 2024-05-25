@@ -13,13 +13,25 @@ from email.mime.multipart import MIMEMultipart
 from main import get_dexcom_env_variables, get_sender_email_credentials, get_receiver_email, concise_message_mdgl
 from dotenv import load_dotenv
 
+# Allow insecure transport for development
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
 # Load environment variables
 load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'your_secret_key')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+app.secret_key = os.getenv("secret_key", 'your_secret_key')
+print(app.secret_key)
+print(f"Loaded CLIENT_ID: {os.getenv('client_id')}")
+print(f"Loaded CLIENT_SECRET: {os.getenv('client_secret')}")
+db_config = {
+    'host': os.getenv('sql_host'),
+    'user': os.getenv('sql_user'),
+    'password': os.getenv('sql_password'),
+    'database': os.getenv('sql_database')
+}
+app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{db_config['user']}:{db_config['password']}@{db_config['host']}/{db_config['database']}"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize database
