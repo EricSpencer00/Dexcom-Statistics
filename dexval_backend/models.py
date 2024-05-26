@@ -55,7 +55,7 @@ class MDGLNumbers(db.Model):
     def to_json(self):
         return {
             'id': self.id,
-            'mdgl_numbers': self.mdgl_numbers,
+            'mdglNumbers': self.mdgl_numbers,
             'time': self.time.isoformat(),
             'notification': self.notification
         }
@@ -91,7 +91,7 @@ class User(db.Model):
         return {
             'id': self.id,
             'email': self.email,
-            'first_name': self.first_name,
-            'last_name': self.last_name,
-            'created_at': self.created_at.isoformat()
+            'firstName': self.first_name,
+            'lastName': self.last_name,
+            'createdAt': self.created_at.isoformat()
         }
