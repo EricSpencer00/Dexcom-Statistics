@@ -1,4 +1,6 @@
 # defs.py
+# Path: backend/stats/stat_functions.py
+
 import os
 import mysql.connector
 import pydexcom
